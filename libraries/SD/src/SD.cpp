@@ -330,22 +330,27 @@ boolean callback_rmdir(SdFile& parentDir, char *filePathComponent,
 
 /* Implementation of class used to create `SDCard` object. */
 
-
-
+// HARDWARE SPI
 boolean SDClass::begin(uint8_t csPin) {
   /*
-
     Performs the initialisation required by the sdfatlib library.
-
     Return true if initialization succeeds, false otherwise.
-
    */
   return card.init(SPI_HALF_SPEED, csPin) &&
          volume.init(card) &&
          root.openRoot(volume);
 }
 
-
+// SOFTWARE SPI
+boolean SDClass::begin(uint8_t mosiPin, uint8_t misoPin, uint8_t sclkPin, uint8_t csPin) {
+  /*
+    Performs the initialisation required by the sdfatlib library.
+    Return true if initialization succeeds, false otherwise.
+   */
+  return card.init(mosiPin, misoPin, sclkPin, csPin) &&
+         volume.init(card) &&
+         root.openRoot(volume);
+}
 
 // this little helper is used to traverse paths
 SdFile SDClass::getParentDir(const char *filepath, int *index) {
