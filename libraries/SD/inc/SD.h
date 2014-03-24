@@ -11,19 +11,12 @@
  (C) Copyright 2010 SparkFun Electronics
 
  */
-
 #ifndef __SD_H__
 #define __SD_H__
 
-//#include <Arduino.h>
-
-//#include <utility/SdFat.h>
-//#include <utility/SdFatUtil.h>
+#include <Application.h>
 #include <SdFat.h>
 #include <SdFatUtil.h>
-
-#include "spark_wiring_stream.h"
-#include "spark_wiring_print.h"
 
 #define FILE_READ O_READ
 #define FILE_WRITE (O_READ | O_WRITE | O_CREAT)
@@ -71,7 +64,9 @@ private:
 public:
   // This needs to be called to set up the connection to the SD card
   // before other methods are used.
-  boolean begin(uint8_t csPin = SS);
+  boolean begin(uint8_t csPin = SS);	// HARDWARE SPI
+
+  boolean begin(uint8_t mosiPin, uint8_t misoPin, uint8_t sclkPin, uint8_t csPin);	// SOFTWARE SPI
   
   // Open the specified file/directory with the supplied mode (e.g. read or
   // write, etc). Returns a File object for interacting with the file.
