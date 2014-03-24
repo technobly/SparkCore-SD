@@ -17,10 +17,10 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
+#include <Application.h>
 #include "SdFat.h"
-//#include <usb_serial.h>
 
-#include "spark_wiring_usbserial.h"
+//#include "spark_wiring_usbserial.h"
 
 //------------------------------------------------------------------------------
 // raw block cache
