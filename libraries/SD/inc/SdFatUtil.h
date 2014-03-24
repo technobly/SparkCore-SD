@@ -23,9 +23,9 @@
  * \file
  * Useful utility functions.
  */
-//#include <WProgram.h>
+#include <Application.h>
 #include <Sd2Card.h>
-#include <string.h>
+//#include <string.h>
 /*
 #ifndef PSTR
 #define PSTR(x) (x)
