@@ -24,12 +24,9 @@
  * Sd2Card class
  */
 #include "Sd2Card_config.h"
-//#include "Sd2PinMap.h"
 #include "SdInfo.h"
-//#include "HardwareSPI.h"
 
 #define SPI_BUFF_SIZE 512
-//extern HardwareSPI SD_SPI;
 
 /** Set SCK to max rate of F_CPU/2. See Sd2Card::setSckRate(). */
 uint8_t const SPI_FULL_SPEED = 0;
@@ -125,18 +122,22 @@ class Sd2Card {
    * Initialize an SD flash memory card with default clock rate and chip
    * select pin.  See sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin).
    */
-  uint8_t init();
+  //uint8_t init();
 
   /**
    * Initialize an SD flash memory card with the selected SPI clock rate
    * and the default SD chip select pin.
    * See sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin).
    */
+  // Hardware SPI inits
   uint8_t init(uint8_t sckRateID) {
     return init(sckRateID, SD_CHIP_SELECT_PIN);
   }
-
   uint8_t init(uint8_t sckRateID, uint8_t chipSelectPin);
+
+  // Software SPI init
+  uint8_t init(uint8_t mosiPin, uint8_t misoPin, uint8_t clockPin, uint8_t chipSelectPin);
+  
   void partialBlockRead(uint8_t value);
   /** Returns the current value, true or false, for partial block read. */
   uint8_t partialBlockRead(void) const {return partialBlockRead_;}
@@ -166,7 +167,11 @@ class Sd2Card {
   uint8_t writeStop(void);
  private:
   uint32_t block_;
+  uint8_t SPImode_;
   uint8_t chipSelectPin_;
+  uint8_t mosiPin_;
+  uint8_t misoPin_;
+  uint8_t clockPin_;
   uint8_t errorCode_;
   uint8_t inBlock_;
   uint16_t offset_;
@@ -182,6 +187,8 @@ class Sd2Card {
     cardCommand(CMD55, 0);
     return cardCommand(cmd, arg);
   }
+  uint8_t sparkSPISend(uint8_t data);
+  uint8_t init(void);
   uint8_t cardCommand(uint8_t cmd, uint32_t arg);
   void error(uint8_t code) {errorCode_ = code;}
   uint8_t readRegister(uint8_t cmd, void* buf);

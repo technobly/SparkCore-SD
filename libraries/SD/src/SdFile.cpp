@@ -17,14 +17,12 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
+ 
+#include <Application.h>
 #include "SdFat.h"
 #include "SdFatUtil.h"
-//#include <avr/pgmspace.h>
-//#include <WProgram.h>
-//#include "HardwareSPI.h"
-//#include <string.h>
 
-#include "spark_wiring_usbserial.h"
+//#include "spark_wiring_usbserial.h"
 
 //------------------------------------------------------------------------------
 // callback function for date/time

@@ -1,8 +1,8 @@
 #ifndef __SD2CARD_CONFIG_H__
 #define __SD2CARD_CONFIG_H__
 
-//#include "wirish.h"
-#include "spark_wiring.h"
+#include <Application.h>
+//#include "spark_wiring.h"
 
 #define SD_SPI_NUMBER	2					/* Specify HardwareSPI number */
 

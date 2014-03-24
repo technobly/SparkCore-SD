@@ -17,13 +17,12 @@
  * along with the Arduino Sd2Card Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-//#include <WProgram.h>
-#include "Sd2Card.h"
-//#include "HardwareSPI.h"
-//#include "spi.h"
 
-#include "spark_wiring_spi.h"
-#include "spark_wiring_usbserial.h"
+#include <Application.h>
+#include "Sd2Card.h"
+
+//#include "spark_wiring_spi.h"
+//#include "spark_wiring_usbserial.h"
 
 /*#include "dma.h"
 #ifdef SPI_DMA
@@ -74,9 +73,11 @@ inline void DMAEvent(){
 
 #else /* not SPI_SPEED_UP */
 	//#ifdef SPI_DMA
-		#define spiSend(b) SPI.transfer(b)
+		//#define spiSend(b) SPI.transfer(b)
+		#define spiSend(b) sparkSPISend(b)
 		/** Receive a byte from the card */
-		#define spiRec() SPI.transfer(0XFF)
+		//#define spiRec() SPI.transfer(0XFF)
+		#define spiRec() sparkSPISend(0XFF)
 	//#else
 		/** Send a byte to the card */
 		//#define spiSend(b) SPI.send(b)
@@ -217,6 +218,9 @@ uint8_t Sd2Card::eraseSingleBlockEnable(void) {
  */
 uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   chipSelectPin_ = chipSelectPin;
+  SPI.begin();
+  SPImode_ = 1;		// Set hardware SPI mode
+  
   /*pinMode(chipSelectPin_ , OUTPUT);
   if( sckRateID == SPI_FULL_SPEED ){
 	  SPI.begin(SPI_HIGH_CLOCK,MSBFIRST,0);
@@ -228,9 +232,25 @@ uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   return init();
 }
 
+uint8_t Sd2Card::init(uint8_t mosiPin, uint8_t misoPin, uint8_t clockPin, uint8_t chipSelectPin) {
+  mosiPin_ = mosiPin;
+  misoPin_ = misoPin;
+  clockPin_ = clockPin;
+  chipSelectPin_ = chipSelectPin;
+  
+  pinMode(clockPin_, OUTPUT);
+  pinMode(mosiPin_, OUTPUT);
+  pinMode(misoPin_, INPUT);
+  pinMode(chipSelectPin_, OUTPUT);
+
+  SPImode_ = 0;		// Set software SPI mode
+
+  return init();
+}
+
 uint8_t Sd2Card::init() {
-  chipSelectPin_ = SS;
-  SPI.begin();
+//  chipSelectPin_ = SS;
+//  SPI.begin();
 
   errorCode_ = inBlock_ = partialBlockRead_ = type_ = 0;
 #ifdef SPI_DMA
@@ -725,4 +745,30 @@ uint8_t Sd2Card::writeStop(void) {
   chipSelectHigh();
     Serial.println("Error: Sd2Card::writeStop()");
   return false;
+}
+
+inline __attribute__((always_inline))
+uint8_t Sd2Card::sparkSPISend(uint8_t data) {
+	uint8_t b=0;
+
+	if (SPImode_) {				// SPI Mode is Hardware so use Spark SPI function
+		b = SPI.transfer(data);
+	}
+	else {						// SPI Mode is Software so use bit bang method
+		for (uint8_t bit = 0; bit < 8; bit++)  {
+			if (data & (1 << (7-bit)))		// walks down mask from bit 7 to bit 0
+				PIN_MAP[mosiPin_].gpio_peripheral->BSRR = PIN_MAP[mosiPin_].gpio_pin; // Data High
+			else
+				PIN_MAP[mosiPin_].gpio_peripheral->BRR = PIN_MAP[mosiPin_].gpio_pin; // Data Low
+			
+			PIN_MAP[clockPin_].gpio_peripheral->BSRR = PIN_MAP[clockPin_].gpio_pin; // Clock High
+
+			b <<= 1;
+			if (PIN_MAP[misoPin_].gpio_peripheral->IDR & PIN_MAP[misoPin_].gpio_pin)
+				b |= 1;
+
+			PIN_MAP[clockPin_].gpio_peripheral->BRR = PIN_MAP[clockPin_].gpio_pin; // Clock Low
+		}
+	}
+	return b;
 }
