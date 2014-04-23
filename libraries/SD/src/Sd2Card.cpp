@@ -220,15 +220,17 @@ uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   chipSelectPin_ = chipSelectPin;
   pinMode(chipSelectPin_, OUTPUT);
   SPI.begin();
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setBitOrder(MSBFIRST);
+  
   SPImode_ = 1;		// Set hardware SPI mode
   
-  /*pinMode(chipSelectPin_ , OUTPUT);
   if( sckRateID == SPI_FULL_SPEED ){
-	  SPI.begin(SPI_HIGH_CLOCK,MSBFIRST,0);
+	  SPI.setClockDivider(SPI_CLOCK_DIV4);
   }
   else{
-	  SPI.begin(SPI_LOW_CLOCK,MSBFIRST,0);
-  }*/
+	  SPI.setClockDivider(SPI_CLOCK_DIV8);
+  }
   //return init(SD_SPI);
   return init();
 }
