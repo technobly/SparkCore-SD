@@ -218,6 +218,7 @@ uint8_t Sd2Card::eraseSingleBlockEnable(void) {
  */
 uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   chipSelectPin_ = chipSelectPin;
+  pinMode(chipSelectPin_, OUTPUT);
   SPI.begin();
   SPImode_ = 1;		// Set hardware SPI mode
   
