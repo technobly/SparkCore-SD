@@ -49,7 +49,7 @@ void setup() {
   if (!card.init(SPI_FULL_SPEED, chipSelect)) error("card.init failed");
   
   // Initialize SOFTWARE SPI
-  //if (!SD.begin(mosiPin, misoPin, clockPin, chipSelect)) error("card.init failed");
+  //if (!card.init(mosiPin, misoPin, clockPin, chipSelect)) error("card.init failed");
 
   // initialize a FAT volume
   if (!volume.init(&card)) error("volume.init failed!");
