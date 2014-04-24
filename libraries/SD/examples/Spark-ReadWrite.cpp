@@ -20,13 +20,16 @@
  */
 
 #include "application.h"
-
-#include <SD.h>
+#include "SD.h"
 
 File myFile;
 
-// change this to match your SD shield or module;
-const int chipSelect = A2;
+// SOFTWARE SPI pin configuration - modify as required
+// The default pins are the same as HARDWARE SPI
+const uint8_t chipSelect = A2;    // Also used for HARDWARE SPI setup
+const uint8_t mosiPin = A5;
+const uint8_t misoPin = A4;
+const uint8_t clockPin = A3;
 
 void setup()
 {
@@ -35,10 +38,21 @@ void setup()
 
   Serial.print("Initializing SD card...");
    
+  // Initialize HARDWARE SPI with user defined chipSelect
   if (!SD.begin(chipSelect)) {
     Serial.println("initialization failed!");
     return;
   }
+
+//  Comment out above lines and uncomment following lines to use SOFTWARE SPI
+/*
+  // Initialize SOFTWARE SPI
+  if (!SD.begin(mosiPin, misoPin, clockPin, chipSelect)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+*/
+
   Serial.println("initialization done.");
   
   // open the file. note that only one file can be open at a time,
