@@ -11,7 +11,7 @@
 
 // SOFTWARE SPI pin configuration - modify as required
 // The default pins are the same as HARDWARE SPI
-const uint8_t chipSelect = SS;    // Also used for HARDWARE SPI setup
+const uint8_t chipSelect = A2;    // Also used for HARDWARE SPI setup
 const uint8_t mosiPin = A5;
 const uint8_t misoPin = A4;
 const uint8_t clockPin = A3;
