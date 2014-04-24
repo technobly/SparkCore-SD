@@ -9,6 +9,13 @@
 #define FILE_SIZE (1000000UL*FILE_SIZE_MB)
 #define BUF_SIZE 100
 
+// SOFTWARE SPI pin configuration - modify as required
+// The default pins are the same as HARDWARE SPI
+const uint8_t chipSelect = SS;    // Also used for HARDWARE SPI setup
+const uint8_t mosiPin = A5;
+const uint8_t misoPin = A4;
+const uint8_t clockPin = A3;
+
 uint8_t buf[BUF_SIZE];
 
 Sd2Card card;
@@ -38,7 +45,11 @@ void setup() {
 
   // initialize the SD card at SPI_FULL_SPEED for best performance.
   // try SPI_HALF_SPEED if bus errors occur.
-  if (!card.init(SPI_FULL_SPEED)) error("card.init failed");
+  // Initialize HARDWARE SPI with user defined chipSelect
+  if (!card.init(SPI_FULL_SPEED, chipSelect)) error("card.init failed");
+  
+  // Initialize SOFTWARE SPI
+  //if (!SD.begin(mosiPin, misoPin, clockPin, chipSelect)) error("card.init failed");
 
   // initialize a FAT volume
   if (!volume.init(&card)) error("volume.init failed!");
