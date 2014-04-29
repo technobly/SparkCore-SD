@@ -218,19 +218,20 @@ uint8_t Sd2Card::eraseSingleBlockEnable(void) {
  */
 uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   chipSelectPin_ = chipSelectPin;
-  pinMode(chipSelectPin_, OUTPUT);
-  SPI.begin();
   SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
   
-  SPImode_ = 1;		// Set hardware SPI mode
-  
   if( sckRateID == SPI_FULL_SPEED ){
-	  SPI.setClockDivider(SPI_CLOCK_DIV4);
+    SPI.setClockDivider(SPI_CLOCK_DIV4);
   }
   else{
-	  SPI.setClockDivider(SPI_CLOCK_DIV8);
+    SPI.setClockDivider(SPI_CLOCK_DIV8);
   }
+  
+  SPI.begin(chipSelectPin_);
+  
+  SPImode_ = 1;		// Set hardware SPI mode
+  
   //return init(SD_SPI);
   return init();
 }
