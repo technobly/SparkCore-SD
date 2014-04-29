@@ -20,16 +20,20 @@
  // include the SD library:
 
 #include "application.h"
-
-#include <SD.h>
+#include "SD.h"
 
 // set up variables using the SD utility library functions:
 Sd2Card card;
 SdVolume volume;
 SdFile root;
 
-// change this to match your SD shield or module;
-const int chipSelect = A2;
+// SOFTWARE SPI pin configuration - modify as required
+// The default pins are the same as HARDWARE SPI
+const uint8_t chipSelect = A2;    // Also used for HARDWARE SPI setup
+const uint8_t mosiPin = A5;
+const uint8_t misoPin = A4;
+const uint8_t clockPin = A3;
+
 
 void setup()
 {
@@ -40,7 +44,11 @@ void setup()
   
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
+  // Initialize HARDWARE SPI with user defined chipSelect
   if (!card.init(SPI_HALF_SPEED, chipSelect)) {
+
+  // Initialize SOFTWARE SPI (uncomment and comment out above line to use)
+//  if (!card.init(mosiPin, misoPin, clockPin, chipSelect)) {
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card is inserted?");
     Serial.println("* Is your wiring correct?");

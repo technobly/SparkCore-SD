@@ -19,8 +19,14 @@
  */
 
 #include "application.h"
+#include "SD.h"
 
-#include <SD.h>
+// SOFTWARE SPI pin configuration - modify as required
+// The default pins are the same as HARDWARE SPI
+const uint8_t chipSelect = A2;    // Also used for HARDWARE SPI setup
+const uint8_t mosiPin = A5;
+const uint8_t misoPin = A4;
+const uint8_t clockPin = A3;
 
 // change this to match your SD shield or module;
 const int chipSelect = A2;
@@ -40,6 +46,16 @@ void setup()
     // don't do anything more:
     return;
   }
+  
+//  Comment out above lines and uncomment following lines to use SOFTWARE SPI
+/*
+  // Initialize SOFTWARE SPI
+  if (!SD.begin(mosiPin, misoPin, clockPin, chipSelect)) {
+    Serial.println("Card failed, or not present");
+    return;
+  }
+*/
+
   Serial.println("card initialized.");
 }
 
