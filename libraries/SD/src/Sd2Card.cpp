@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <Application.h>
+#include "application.h"
 #include "Sd2Card.h"
 
 //#include "spark_wiring_spi.h"
@@ -220,18 +220,18 @@ uint8_t Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   chipSelectPin_ = chipSelectPin;
   SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
-  
+
   if( sckRateID == SPI_FULL_SPEED ){
     SPI.setClockDivider(SPI_CLOCK_DIV4);
   }
   else{
     SPI.setClockDivider(SPI_CLOCK_DIV8);
   }
-  
+
   SPI.begin(chipSelectPin_);
-  
+
   SPImode_ = 1;		// Set hardware SPI mode
-  
+
   //return init(SD_SPI);
   return init();
 }
@@ -241,7 +241,7 @@ uint8_t Sd2Card::init(uint8_t mosiPin, uint8_t misoPin, uint8_t clockPin, uint8_
   misoPin_ = misoPin;
   clockPin_ = clockPin;
   chipSelectPin_ = chipSelectPin;
-  
+
   pinMode(clockPin_, OUTPUT);
   pinMode(mosiPin_, OUTPUT);
   pinMode(misoPin_, INPUT);
@@ -266,10 +266,10 @@ uint8_t Sd2Card::init() {
     //DMA activity control
     dmaActive = false;
     //Acknowledgment array
-    for(int i=0; i<SPI_BUFF_SIZE; i++) 
+    for(int i=0; i<SPI_BUFF_SIZE; i++)
         ack[i] = 0xFF;
 #endif
-	
+
   //chipSelectPin_ = chipSelectPin;
   // 16-bit init start time allows over a minute
 
@@ -295,7 +295,7 @@ uint8_t Sd2Card::init() {
 //  SPSR &= ~(1 << SPI2X);
 
   // must supply min of 74 clock cycles with CS high.
-  
+
   chipSelectHigh();
     for (uint8_t i = 0; i < 10; i++) spiSend(0XFF);
   chipSelectLow();
@@ -421,44 +421,44 @@ uint8_t Sd2Card::readData(uint32_t block,
 #ifdef SPI_DMA
     // skip data before offset
     if(offset_ < offset){
-        dma_setup_transfer(DMA1, 
-				DMA_CH3, 
-				&SPI1->regs->DR, 
-				DMA_SIZE_8BITS, 
-				ack, 
+        dma_setup_transfer(DMA1,
+				DMA_CH3,
+				&SPI1->regs->DR,
+				DMA_SIZE_8BITS,
+				ack,
 				DMA_SIZE_8BITS,
                            (/*DMA_MINC_MODE | DMA_CIRC_MODE  |*/ DMA_FROM_MEM | DMA_TRNS_CMPLT | DMA_TRNS_ERR));
         dma_attach_interrupt(DMA1, DMA_CH3, DMAEvent);
         dma_set_priority(DMA1, DMA_CH3, DMA_PRIORITY_VERY_HIGH);
         dma_set_num_transfers(DMA1, DMA_CH3, offset - offset_);
-        
+
         dmaActive = true;
         dma_enable(DMA1, DMA_CH3);
-        
+
         while(dmaActive) delayMicroseconds(1);
         dma_disable(DMA1, DMA_CH3);
     }
     offset_ = offset;
-    
+
     // transfer data
     dma_setup_transfer(DMA1, DMA_CH2, &SPI1->regs->DR, DMA_SIZE_8BITS, dst, DMA_SIZE_8BITS,
                        (DMA_MINC_MODE | DMA_TRNS_CMPLT | DMA_TRNS_ERR));
     dma_attach_interrupt(DMA1, DMA_CH2, DMAEvent);
     dma_setup_transfer(DMA1, DMA_CH3, &SPI1->regs->DR, DMA_SIZE_8BITS, ack, DMA_SIZE_8BITS,
-                       (/*DMA_MINC_MODE | DMA_CIRC_MODE |*/ DMA_FROM_MEM));             
+                       (/*DMA_MINC_MODE | DMA_CIRC_MODE |*/ DMA_FROM_MEM));
     dma_set_priority(DMA1, DMA_CH2, DMA_PRIORITY_VERY_HIGH);
     dma_set_priority(DMA1, DMA_CH3, DMA_PRIORITY_VERY_HIGH);
     dma_set_num_transfers(DMA1, DMA_CH2, count);
     dma_set_num_transfers(DMA1, DMA_CH3, count);
-    
+
     dmaActive = true;
     dma_enable(DMA1, DMA_CH3);
     dma_enable(DMA1, DMA_CH2);
-    
+
     while(dmaActive) delayMicroseconds(1);
     dma_disable(DMA1, DMA_CH3);
     dma_disable(DMA1, DMA_CH2);
-    
+
     offset_ += count;
     if (!partialBlockRead_ || offset_ >= SPI_BUFF_SIZE) {
         readEnd();
@@ -494,14 +494,14 @@ void Sd2Card::readEnd(void) {
       // skip data and crc
 #ifdef SPI_DMA
         dma_setup_transfer(DMA1, DMA_CH3, &SPI1->regs->DR, DMA_SIZE_8BITS, ack, DMA_SIZE_8BITS,
-                           (/*DMA_MINC_MODE | DMA_CIRC_MODE |*/ DMA_FROM_MEM | DMA_TRNS_CMPLT | DMA_TRNS_ERR));  
+                           (/*DMA_MINC_MODE | DMA_CIRC_MODE |*/ DMA_FROM_MEM | DMA_TRNS_CMPLT | DMA_TRNS_ERR));
         dma_attach_interrupt(DMA1, DMA_CH3, DMAEvent);
         dma_set_priority(DMA1, DMA_CH3, DMA_PRIORITY_VERY_HIGH);
         dma_set_num_transfers(DMA1, DMA_CH3, SPI_BUFF_SIZE + 1 - offset_);
-        
+
         dmaActive = true;
         dma_enable(DMA1, DMA_CH3);
-        
+
         while(dmaActive)delayMicroseconds(1);
         dma_disable(DMA1, DMA_CH3);
 #else  // SPI_DMA
@@ -754,6 +754,7 @@ uint8_t Sd2Card::writeStop(void) {
 inline __attribute__((always_inline))
 uint8_t Sd2Card::sparkSPISend(uint8_t data) {
 	uint8_t b=0;
+	STM32_Pin_Info* PIN_MAP = HAL_Pin_Map(); // Pointer required for highest access speed
 
 	if (SPImode_) {				// SPI Mode is Hardware so use Spark SPI function
 		b = SPI.transfer(data);
@@ -761,17 +762,17 @@ uint8_t Sd2Card::sparkSPISend(uint8_t data) {
 	else {						// SPI Mode is Software so use bit bang method
 		for (uint8_t bit = 0; bit < 8; bit++)  {
 			if (data & (1 << (7-bit)))		// walks down mask from bit 7 to bit 0
-				PIN_MAP[mosiPin_].gpio_peripheral->BSRR = PIN_MAP[mosiPin_].gpio_pin; // Data High
+				PIN_MAP[mosiPin_].gpio_peripheral->BSRRL = PIN_MAP[mosiPin_].gpio_pin; // Data High
 			else
-				PIN_MAP[mosiPin_].gpio_peripheral->BRR = PIN_MAP[mosiPin_].gpio_pin; // Data Low
-			
-			PIN_MAP[clockPin_].gpio_peripheral->BSRR = PIN_MAP[clockPin_].gpio_pin; // Clock High
+				PIN_MAP[mosiPin_].gpio_peripheral->BSRRH = PIN_MAP[mosiPin_].gpio_pin; // Data Low
+
+			PIN_MAP[clockPin_].gpio_peripheral->BSRRL = PIN_MAP[clockPin_].gpio_pin; // Clock High
 
 			b <<= 1;
 			if (PIN_MAP[misoPin_].gpio_peripheral->IDR & PIN_MAP[misoPin_].gpio_pin)
 				b |= 1;
 
-			PIN_MAP[clockPin_].gpio_peripheral->BRR = PIN_MAP[clockPin_].gpio_pin; // Clock Low
+			PIN_MAP[clockPin_].gpio_peripheral->BSRRH = PIN_MAP[clockPin_].gpio_pin; // Clock Low
 		}
 	}
 	return b;
